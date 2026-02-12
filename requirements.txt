@@ -1,0 +1,14 @@
+python-telegram-bot
+gspread
+google-auth-oauthlib
+boto3
+requests
+fpdf2
+Pillow
+pytest
+pytest-cov
+pytest-asyncio
+responses
+freezegun
+flake8
+allure-pytest

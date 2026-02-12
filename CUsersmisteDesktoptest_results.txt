@@ -1,0 +1,410 @@
+...................................FF.......................F.FF.....F.. [ 40%]
+.....FFF.........................................FF..................... [ 81%]
+.................................                                        [100%]
+================================== FAILURES ===================================
+__________ TestRegisterDebtPayment.test_partial_payment_keeps_activa __________
+
+self = <tests.test_debts_service.TestRegisterDebtPayment object at 0x0000012402E03260>
+mock_get_sheet = <MagicMock name='get_or_create_debts_sheet' id='1254187312112'>
+
+    @patch("services.debts_service.get_or_create_debts_sheet")
+    def test_partial_payment_keeps_activa(self, mock_get_sheet):
+        mock_ws = self._setup_mock_sheet(mock_get_sheet, current_paid=10000.0, current_pending=40000.0)
+    
+        from services.debts_service import register_debt_payment
+        result = register_debt_payment("DEUDA-1", 15000.0)
+    
+        # new_paid = 10000 + 15000 = 25000, new_pending = 40000 - 15000 = 25000
+>       mock_ws.update_cell.assert_any_call(3, 4, 25000.0)   # paid column
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_debts_service.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <MagicMock name='get_or_create_debts_sheet().update_cell' id='1254187391392'>
+args = (3, 4, 25000.0), kwargs = {}, expected = call(3, 4, 25000.0)
+cause = None
+actual = [call(3, 4, 115000.0), call(3, 5, 385000.0), call(3, 6, 'Activa'), call(3, 8, '2026-02-10 19:14:01')]
+expected_string = 'update_cell(3, 4, 25000.0)'
+
+    def assert_any_call(self, /, *args, **kwargs):
+        """assert the mock has been called with the specified arguments.
+    
+        The assert passes if the mock has *ever* been called, unlike
+        `assert_called_with` and `assert_called_once_with` that only pass if
+        the call is the most recent one."""
+        expected = self._call_matcher(_Call((args, kwargs), two=True))
+        cause = expected if isinstance(expected, Exception) else None
+        actual = [self._call_matcher(c) for c in self.call_args_list]
+        if cause or expected not in _AnyComparer(actual):
+            expected_string = self._format_mock_call_signature(args, kwargs)
+>           raise AssertionError(
+                '%s call not found' % expected_string
+            ) from cause
+E           AssertionError: update_cell(3, 4, 25000.0) call not found
+
+..\..\..\AppData\Local\Programs\Python\Python312\Lib\unittest\mock.py:1015: AssertionError
+___________ TestRegisterDebtPayment.test_full_payment_marks_saldada ___________
+
+self = <tests.test_debts_service.TestRegisterDebtPayment object at 0x0000012402E034D0>
+mock_get_sheet = <MagicMock name='get_or_create_debts_sheet' id='1254187202704'>
+
+    @patch("services.debts_service.get_or_create_debts_sheet")
+    def test_full_payment_marks_saldada(self, mock_get_sheet):
+        mock_ws = self._setup_mock_sheet(mock_get_sheet, current_paid=0.0, current_pending=50000.0)
+    
+        from services.debts_service import register_debt_payment
+        result = register_debt_payment("DEUDA-1", 50000.0)
+    
+>       mock_ws.update_cell.assert_any_call(3, 5, 0.0)         # pending = 0
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_debts_service.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <MagicMock name='get_or_create_debts_sheet().update_cell' id='1254187247632'>
+args = (3, 5, 0.0), kwargs = {}, expected = call(3, 5, 0.0), cause = None
+actual = [call(3, 4, 50000.0), call(3, 5, 450000.0), call(3, 6, 'Activa'), call(3, 8, '2026-02-10 19:14:01')]
+expected_string = 'update_cell(3, 5, 0.0)'
+
+    def assert_any_call(self, /, *args, **kwargs):
+        """assert the mock has been called with the specified arguments.
+    
+        The assert passes if the mock has *ever* been called, unlike
+        `assert_called_with` and `assert_called_once_with` that only pass if
+        the call is the most recent one."""
+        expected = self._call_matcher(_Call((args, kwargs), two=True))
+        cause = expected if isinstance(expected, Exception) else None
+        actual = [self._call_matcher(c) for c in self.call_args_list]
+        if cause or expected not in _AnyComparer(actual):
+            expected_string = self._format_mock_call_signature(args, kwargs)
+>           raise AssertionError(
+                '%s call not found' % expected_string
+            ) from cause
+E           AssertionError: update_cell(3, 5, 0.0) call not found
+
+..\..\..\AppData\Local\Programs\Python\Python312\Lib\unittest\mock.py:1015: AssertionError
+________________ TestInvalidateProductsCache.test_clears_cache ________________
+
+self = <tests.test_products_service.TestInvalidateProductsCache object at 0x000001240347A0F0>
+
+    def test_clears_cache(self):
+        from services.products_service import products_cache, invalidate_products_cache
+        products_cache['data'] = [{"Producto": "Test"}]
+        products_cache['timestamp'] = time.time()
+    
+        invalidate_products_cache()
+    
+>       assert products_cache['data'] is None
+E       AssertionError: assert [{'Producto': 'Test'}] is None
+
+tests\test_products_service.py:18: AssertionError
+______ TestGetAllProductsDataCached.test_returns_cached_data_within_ttl _______
+
+self = <tests.test_products_service.TestGetAllProductsDataCached object at 0x000001240347A600>
+mock_get_sheet = <MagicMock name='get_product_sheet' id='1254186296736'>
+
+    @patch("services.products_service.get_product_sheet")
+    def test_returns_cached_data_within_ttl(self, mock_get_sheet):
+        from services.products_service import products_cache, get_all_products_data_cached
+        cached_data = [{"Producto": "Cached"}]
+        products_cache['data'] = cached_data
+        products_cache['timestamp'] = time.time()  # fresh cache
+    
+>       result = get_all_products_data_cached()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_products_service.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def get_all_products_data_cached() -> List[Dict[str, Any]]:
+        """Returns all product records, using an in-memory cache with TTL."""
+        now = datetime.now()
+        if products_cache['data'] is not None and products_cache['timestamp']:
+>           if (now - products_cache['timestamp']).total_seconds() < CACHE_TTL_SECONDS:
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: unsupported operand type(s) for -: 'datetime.datetime' and 'float'
+
+services\products_service.py:42: TypeError
+________ TestGetAllProductsDataCached.test_refreshes_after_ttl_expires ________
+
+self = <tests.test_products_service.TestGetAllProductsDataCached object at 0x000001240347A870>
+mock_get_sheet = <MagicMock name='get_product_sheet' id='1254186917072'>
+
+    @patch("services.products_service.get_product_sheet")
+    def test_refreshes_after_ttl_expires(self, mock_get_sheet):
+        from services.products_service import products_cache, CACHE_TTL_SECONDS, get_all_products_data_cached
+        products_cache['data'] = [{"Producto": "Old"}]
+        products_cache['timestamp'] = time.time() - CACHE_TTL_SECONDS - 1  # expired
+    
+        mock_ws = MagicMock()
+        mock_ws.get_all_records.return_value = [{"Producto": "Fresh"}]
+        mock_get_sheet.return_value = mock_ws
+    
+>       result = get_all_products_data_cached()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_products_service.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def get_all_products_data_cached() -> List[Dict[str, Any]]:
+        """Returns all product records, using an in-memory cache with TTL."""
+        now = datetime.now()
+        if products_cache['data'] is not None and products_cache['timestamp']:
+>           if (now - products_cache['timestamp']).total_seconds() < CACHE_TTL_SECONDS:
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: unsupported operand type(s) for -: 'datetime.datetime' and 'float'
+
+services\products_service.py:42: TypeError
+________________ TestGetVariantDetails.test_finds_exact_match _________________
+
+self = <tests.test_products_service.TestGetVariantDetails object at 0x000001240347B770>
+mock_cached = <MagicMock name='get_all_products_data_cached' id='1254186971600'>
+
+    @patch("services.products_service.get_all_products_data_cached")
+    def test_finds_exact_match(self, mock_cached):
+        mock_cached.return_value = [
+            {
+                "Producto": "Remera", "Categoría": "REMERAS",
+                "Opción 1: Nombre": "Color", "Opción 1: Valor": "Rojo",
+                "Opción 2: Nombre": "Talle", "Opción 2: Valor": "M",
+                "Opción 3: Nombre": "", "Opción 3: Valor": "",
+                "Precio Final": 5000, "Stock": 10, "row_number": 3,
+            },
+            {
+                "Producto": "Remera", "Categoría": "REMERAS",
+                "Opción 1: Nombre": "Color", "Opción 1: Valor": "Azul",
+                "Opción 2: Nombre": "Talle", "Opción 2: Valor": "L",
+                "Opción 3: Nombre": "", "Opción 3: Valor": "",
+                "Precio Final": 5000, "Stock": 5, "row_number": 4,
+            },
+        ]
+    
+        from services.products_service import get_variant_details
+        result = get_variant_details("Remera", {"Color": "Rojo", "Talle": "M"})
+    
+>       assert result is not None
+E       assert None is not None
+
+tests\test_products_service.py:158: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  services.products_service:products_service.py:158 Variante no encontrada para 'Remera' con selecciones {'Color': 'Rojo', 'Talle': 'M'}
+____________ TestGenerateBalancePdf.test_produces_valid_file_path _____________
+
+self = <tests.test_report_generator.TestGenerateBalancePdf object at 0x0000012403495610>
+mock_chart = <MagicMock name='_create_bar_chart' id='1254196213664'>
+full_balance_data = {'gastos_personales_summary': {'by_category': {'ALQUILER': 15000.0}, 'count': 2, 'total': 15000.0}, 'gastos_pg_summary...OS': 20000.0, 'MARKETING': 10000.0}, 'count': 5, 'total': 30000.0}, 'month_name': 'Enero', 'saldo_neto': 105000.0, ...}
+
+    @patch("services.report_generator._create_bar_chart")
+    def test_produces_valid_file_path(self, mock_chart, full_balance_data):
+        from services.report_generator import generate_balance_pdf
+        result = generate_balance_pdf(full_balance_data)
+    
+>       assert result is not None
+E       assert None is not None
+
+tests\test_report_generator.py:71: AssertionError
+------------------------------ Captured log call ------------------------------
+ERROR    services.report_generator:report_generator.py:208 Error generando el reporte PDF: Pillow not available - fpdf2 cannot insert images
+Traceback (most recent call last):
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\services\report_generator.py", line 63, in generate_balance_pdf
+    pdf.add_page()
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 1079, in add_page
+    self.header()
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\services\report_generator.py", line 30, in header
+    self.image(os.path.join(_ASSETS_DIR, 'logo.png'), x=logo_x_position, y=8, w=logo_width)
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 221, in wrapper
+    return fn(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 4503, in image
+    name, img, info = preload_image(self.image_cache, name, dims)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\image_parsing.py", line 125, in preload_image
+    info = get_img_info(name, img, image_cache.image_filter, dims)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\image_parsing.py", line 223, in get_img_info
+    raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
+OSError: Pillow not available - fpdf2 cannot insert images
+______________ TestGenerateBalancePdf.test_pdf_file_is_non_empty ______________
+
+self = <tests.test_report_generator.TestGenerateBalancePdf object at 0x00000124034958B0>
+mock_chart = <MagicMock name='_create_bar_chart' id='1254197190320'>
+full_balance_data = {'gastos_personales_summary': {'by_category': {'ALQUILER': 15000.0}, 'count': 2, 'total': 15000.0}, 'gastos_pg_summary...OS': 20000.0, 'MARKETING': 10000.0}, 'count': 5, 'total': 30000.0}, 'month_name': 'Enero', 'saldo_neto': 105000.0, ...}
+
+    @patch("services.report_generator._create_bar_chart")
+    def test_pdf_file_is_non_empty(self, mock_chart, full_balance_data):
+        from services.report_generator import generate_balance_pdf
+        result = generate_balance_pdf(full_balance_data)
+    
+>       assert result is not None
+E       assert None is not None
+
+tests\test_report_generator.py:84: AssertionError
+------------------------------ Captured log call ------------------------------
+ERROR    services.report_generator:report_generator.py:208 Error generando el reporte PDF: Pillow not available - fpdf2 cannot insert images
+Traceback (most recent call last):
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\services\report_generator.py", line 63, in generate_balance_pdf
+    pdf.add_page()
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 1079, in add_page
+    self.header()
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\services\report_generator.py", line 30, in header
+    self.image(os.path.join(_ASSETS_DIR, 'logo.png'), x=logo_x_position, y=8, w=logo_width)
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 221, in wrapper
+    return fn(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 4503, in image
+    name, img, info = preload_image(self.image_cache, name, dims)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\image_parsing.py", line 125, in preload_image
+    info = get_img_info(name, img, image_cache.image_filter, dims)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\image_parsing.py", line 223, in get_img_info
+    raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
+OSError: Pillow not available - fpdf2 cannot insert images
+___________ TestGenerateBalancePdf.test_handles_empty_balance_data ____________
+
+self = <tests.test_report_generator.TestGenerateBalancePdf object at 0x0000012403495B50>
+mock_chart = <MagicMock name='_create_bar_chart' id='1254197197232'>
+empty_balance_data = {'gastos_personales_summary': {'by_category': {}, 'count': 0, 'total': 0.0}, 'gastos_pg_summary': {'by_category': {}, 'count': 0, 'total': 0.0}, 'month_name': 'Febrero', 'saldo_neto': 0.0, ...}
+
+    @patch("services.report_generator._create_bar_chart")
+    def test_handles_empty_balance_data(self, mock_chart, empty_balance_data):
+        from services.report_generator import generate_balance_pdf
+        result = generate_balance_pdf(empty_balance_data)
+    
+>       assert result is not None
+E       assert None is not None
+
+tests\test_report_generator.py:95: AssertionError
+------------------------------ Captured log call ------------------------------
+ERROR    services.report_generator:report_generator.py:208 Error generando el reporte PDF: Pillow not available - fpdf2 cannot insert images
+Traceback (most recent call last):
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\services\report_generator.py", line 63, in generate_balance_pdf
+    pdf.add_page()
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 1079, in add_page
+    self.header()
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\services\report_generator.py", line 30, in header
+    self.image(os.path.join(_ASSETS_DIR, 'logo.png'), x=logo_x_position, y=8, w=logo_width)
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 221, in wrapper
+    return fn(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py", line 4503, in image
+    name, img, info = preload_image(self.image_cache, name, dims)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\image_parsing.py", line 125, in preload_image
+    info = get_img_info(name, img, image_cache.image_filter, dims)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\image_parsing.py", line 223, in get_img_info
+    raise EnvironmentError("Pillow not available - fpdf2 cannot insert images")
+OSError: Pillow not available - fpdf2 cannot insert images
+____________ TestGetTiendanubeProducts.test_happy_path_single_page ____________
+
+self = <tests.test_tiendanube_service.TestGetTiendanubeProducts object at 0x00000124034EC620>
+mock_get = <MagicMock name='get' id='1254197870368'>
+
+    @patch("services.tiendanube_service.TIENDANUBE_ACCESS_TOKEN", "valid_token")
+    @patch("services.tiendanube_service.TIENDANUBE_STORE_ID", 12345)
+    @patch("services.tiendanube_service.requests.get")
+    def test_happy_path_single_page(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = [
+            {
+                "id": 1,
+                "name": {"es": "Remera"},
+                "categories": [{"name": {"es": "REMERAS"}}],
+                "attributes": [{"es": "Color"}, {"es": "Talle"}],
+                "variants": [
+                    {
+                        "id": 100,
+                        "sku": "REM-001",
+                        "stock_management": True,
+                        "stock": 10,
+                        "price": "5000.00",
+                        "promotional_price": None,
+                        "values": [{"es": "Rojo"}, {"es": "M"}],
+                    }
+                ],
+            }
+        ]
+        # First call returns data, second returns empty (end of pages)
+        mock_get.side_effect = [mock_response, MagicMock(json=MagicMock(return_value=[]), status_code=200, raise_for_status=MagicMock())]
+    
+        from services.tiendanube_service import get_tiendanube_products
+        result = get_tiendanube_products()
+    
+        assert len(result) == 1
+        row = result[0]
+        assert row[0] == "Remera"       # product name
+        assert row[1] == 1              # product id
+        assert row[2] == 100            # variant id
+        assert row[3] == "REM-001"      # sku
+        assert row[11] == 10            # stock
+>       assert row[12] == 5000.0        # unit price
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert 500000.0 == 5000.0
+
+tests\test_tiendanube_service.py:84: AssertionError
+_______ TestGetTiendanubeProducts.test_promo_price_calculates_discount ________
+
+self = <tests.test_tiendanube_service.TestGetTiendanubeProducts object at 0x00000124034EC890>
+mock_get = <MagicMock name='get' id='1254197935520'>
+
+    @patch("services.tiendanube_service.TIENDANUBE_ACCESS_TOKEN", "valid_token")
+    @patch("services.tiendanube_service.TIENDANUBE_STORE_ID", 12345)
+    @patch("services.tiendanube_service.requests.get")
+    def test_promo_price_calculates_discount(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.json.return_value = [
+            {
+                "id": 1, "name": "Test", "categories": [], "attributes": [],
+                "variants": [{
+                    "id": 100, "sku": "", "stock_management": True, "stock": 5,
+                    "price": "10000.00", "promotional_price": "8000.00", "values": [],
+                }]
+            }
+        ]
+        mock_get.side_effect = [mock_response, MagicMock(json=MagicMock(return_value=[]), status_code=200, raise_for_status=MagicMock())]
+    
+        from services.tiendanube_service import get_tiendanube_products
+        result = get_tiendanube_products()
+    
+        row = result[0]
+>       assert row[12] == 10000.0            # unit price
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert 1000000.0 == 10000.0
+
+tests\test_tiendanube_service.py:107: AssertionError
+============================== warnings summary ===============================
+tests/test_report_generator.py::TestHexToRgb::test_converts_black
+  C:\Users\miste\Desktop\Dev\Pombot-Handler-new\fpdf\fpdf.py:39: UserWarning: Pillow could not be imported - fpdf2 will not be able to add any image
+    warnings.warn(
+
+tests/test_report_generator.py::TestGenerateBalancePdf::test_produces_valid_file_path
+tests/test_report_generator.py::TestGenerateBalancePdf::test_pdf_file_is_non_empty
+tests/test_report_generator.py::TestGenerateBalancePdf::test_handles_empty_balance_data
+tests/test_report_generator.py::TestGenerateBalancePdf::test_returns_none_on_error
+  C:\Users\miste\Desktop\Dev\Pombot-Handler-new\services\report_generator.py:21: DeprecationWarning: Substituting font arial by core font helvetica - This is deprecated since v2.7.8, and will soon be removed
+    self.set_font('Arial', 'B', 12)
+
+tests/test_report_generator.py::TestGenerateBalancePdf::test_produces_valid_file_path
+tests/test_report_generator.py::TestGenerateBalancePdf::test_pdf_file_is_non_empty
+tests/test_report_generator.py::TestGenerateBalancePdf::test_handles_empty_balance_data
+tests/test_report_generator.py::TestGenerateBalancePdf::test_returns_none_on_error
+  C:\Users\miste\Desktop\Dev\Pombot-Handler-new\services\report_generator.py:22: DeprecationWarning: The parameter "ln" is deprecated since v2.5.2. Instead of ln=1 use new_x=XPos.LMARGIN, new_y=YPos.NEXT.
+    self.cell(0, 10, 'Reporte de Balance Mensual - Pombot', 0, 1, 'C')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_debts_service.py::TestRegisterDebtPayment::test_partial_payment_keeps_activa
+FAILED tests/test_debts_service.py::TestRegisterDebtPayment::test_full_payment_marks_saldada
+FAILED tests/test_products_service.py::TestInvalidateProductsCache::test_clears_cache
+FAILED tests/test_products_service.py::TestGetAllProductsDataCached::test_returns_cached_data_within_ttl
+FAILED tests/test_products_service.py::TestGetAllProductsDataCached::test_refreshes_after_ttl_expires
+FAILED tests/test_products_service.py::TestGetVariantDetails::test_finds_exact_match
+FAILED tests/test_report_generator.py::TestGenerateBalancePdf::test_produces_valid_file_path
+FAILED tests/test_report_generator.py::TestGenerateBalancePdf::test_pdf_file_is_non_empty
+FAILED tests/test_report_generator.py::TestGenerateBalancePdf::test_handles_empty_balance_data
+FAILED tests/test_tiendanube_service.py::TestGetTiendanubeProducts::test_happy_path_single_page
+FAILED tests/test_tiendanube_service.py::TestGetTiendanubeProducts::test_promo_price_calculates_discount
+11 failed, 166 passed, 9 warnings in 1.22s

@@ -1,0 +1,6 @@
+@echo off
+echo Running tests and generating Allure report...
+python -m pytest tests/ --alluredir=allure-results
+echo.
+echo Generating report...
+allure serve allure-results
