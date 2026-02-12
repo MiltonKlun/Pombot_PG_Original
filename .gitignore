@@ -99,3 +99,10 @@ typing_extensions.py
 typing_extensions-*.dist-info/
 urllib3/
 urllib3-*.dist-info/
+
+# Lambda Deployment Artifacts
+lambda_artifact.zip
+build/
+requirements-lambda.txt
+scripts/build_lambda.bat
+DEPLOY_INSTRUCTIONS.md
