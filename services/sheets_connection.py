@@ -29,11 +29,11 @@ spreadsheet: Optional[gspread.Spreadsheet] = None
 def connect_globally_to_sheets() -> bool:
     """Establishes a global connection to Google Sheets."""
     global gc, spreadsheet, IS_SHEET_CONNECTED
+    if gc and spreadsheet:
+        return True
     if not google_credentials:
         logger.critical("Credenciales de Google no disponibles en config.py.")
         return False
-    if gc and spreadsheet:
-        return True
     try:
         gc = gspread.authorize(google_credentials)
         spreadsheet = gc.open_by_key(SHEET_ID)
