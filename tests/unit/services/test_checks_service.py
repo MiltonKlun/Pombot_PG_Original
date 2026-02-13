@@ -150,7 +150,7 @@ class TestGetItemsDueInXDays:
 class TestUpdatePastDueStatuses:
     """Tests for update_past_due_statuses — marks past-due items as PAGO."""
 
-    @patch("services.checks_service._get_or_create_worksheet")
+    @patch("services.checks_service._get_or_create_worksheet", autospec=True)
     def test_marks_past_due_as_pago(self, mock_get_ws):
         yesterday = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
         tomorrow = (datetime.now() + timedelta(days=1)).strftime("%d/%m/%Y")

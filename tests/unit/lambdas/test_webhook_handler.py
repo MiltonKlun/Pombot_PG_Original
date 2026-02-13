@@ -11,7 +11,7 @@ class TestProcessWebhookEvent:
 
     @patch("lambdas.webhook_handler.log_webhook_event", return_value=True)
     @patch("lambdas.webhook_handler.get_full_order_details")
-    @patch("lambdas.webhook_handler.process_order_paid")
+    @patch("lambdas.webhook_handler.process_order_paid", autospec=True)
     def test_processes_order_paid(self, mock_process, mock_get_details, mock_log):
         from lambdas.webhook_handler import process_webhook_event
         event_data = {

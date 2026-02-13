@@ -106,3 +106,8 @@ build/
 requirements-lambda.txt
 scripts/build_lambda.bat
 DEPLOY_INSTRUCTIONS.md
+
+# Temporary Deployment Files
+fpdf/
+*.zip
+*.txt

@@ -31,7 +31,7 @@ class TestFuturePaymentsMenu:
         assert "Módulo de Pagos Futuros" in args[0]
 
     @pytest.mark.asyncio
-    @patch("handlers.future_payments.get_pending_future_payments")
+    @patch("handlers.future_payments.get_pending_future_payments", autospec=True)
     @patch("handlers.future_payments.display_main_menu", new_callable=AsyncMock, return_value=-1)
     async def test_consult_lists_payments(self, mock_menu, mock_get_pending):
         from handlers.future_payments import fp_menu_handler
@@ -50,7 +50,7 @@ class TestFuturePaymentsMenu:
         assert "$1,000.00" in last_call_text
 
     @pytest.mark.asyncio
-    @patch("handlers.future_payments.get_pending_future_payments", return_value=[])
+    @patch("handlers.future_payments.get_pending_future_payments", autospec=True, return_value=[])
     @patch("handlers.future_payments.display_main_menu", new_callable=AsyncMock, return_value=-1)
     async def test_consult_handles_empty_list(self, mock_menu, mock_get_pending):
         from handlers.future_payments import fp_menu_handler
@@ -144,7 +144,7 @@ class TestFuturePaymentsFinalize:
     """Tests for the final step: saving the record."""
 
     @pytest.mark.asyncio
-    @patch("handlers.future_payments.add_future_payment")
+    @patch("handlers.future_payments.add_future_payment", autospec=True)
     @patch("handlers.future_payments.display_main_menu", new_callable=AsyncMock, return_value=-1)
     async def test_saves_successfully(self, mock_menu, mock_add):
         from handlers.future_payments import fp_get_due_date
@@ -172,7 +172,7 @@ class TestFuturePaymentsFinalize:
         assert state == -1
 
     @pytest.mark.asyncio
-    @patch("handlers.future_payments.add_future_payment", side_effect=Exception("Sheet Error"))
+    @patch("handlers.future_payments.add_future_payment", autospec=True, side_effect=Exception("Sheet Error"))
     @patch("handlers.future_payments.display_main_menu", new_callable=AsyncMock, return_value=-1)
     async def test_handles_save_error(self, mock_menu, mock_add):
         from handlers.future_payments import fp_get_due_date

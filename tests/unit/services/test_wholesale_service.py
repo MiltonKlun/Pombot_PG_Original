@@ -10,7 +10,7 @@ from collections import defaultdict
 class TestAddWholesaleRecord:
     """Tests for add_wholesale_record — records a wholesale transaction."""
 
-    @patch("services.wholesale_service.get_or_create_monthly_sheet")
+    @patch("services.wholesale_service.get_or_create_monthly_sheet", autospec=True)
     def test_calculates_remaining_amount(self, mock_get_sheet):
         mock_ws = MagicMock()
         mock_ws.title = "Mayoristas Enero 2026"
@@ -36,7 +36,7 @@ class TestAddWholesaleRecord:
         assert result["name"] == "Mayorista A"
         assert result["paid_amount"] == 30000.0
 
-    @patch("services.wholesale_service.get_or_create_monthly_sheet")
+    @patch("services.wholesale_service.get_or_create_monthly_sheet", autospec=True)
     def test_full_payment_has_zero_remaining(self, mock_get_sheet):
         mock_ws = MagicMock()
         mock_ws.title = "Mayoristas Enero 2026"
@@ -48,14 +48,14 @@ class TestAddWholesaleRecord:
         row = mock_ws.append_row.call_args[0][0]
         assert row[6] == 0.0  # remaining = 0
 
-    @patch("services.wholesale_service.get_or_create_monthly_sheet")
+    @patch("services.wholesale_service.get_or_create_monthly_sheet", autospec=True)
     def test_returns_none_on_no_sheet(self, mock_get_sheet):
         mock_get_sheet.return_value = None
 
         from services.wholesale_service import add_wholesale_record
         assert add_wholesale_record("A", "X", 1, 1000, 2000, "Seña") is None
 
-    @patch("services.wholesale_service.get_or_create_monthly_sheet")
+    @patch("services.wholesale_service.get_or_create_monthly_sheet", autospec=True)
     def test_returns_none_on_append_error(self, mock_get_sheet):
         mock_ws = MagicMock()
         mock_ws.append_row.side_effect = Exception("API error")
@@ -98,7 +98,7 @@ class TestGetPendingWholesalePayments:
 class TestModifyWholesalePayment:
     """Tests for modify_wholesale_payment — applies payment to existing seña."""
 
-    @patch("services.wholesale_service.get_or_create_monthly_sheet")
+    @patch("services.wholesale_service.get_or_create_monthly_sheet", autospec=True)
     def test_partial_payment_updates_amounts(self, mock_get_sheet):
         mock_ws = MagicMock()
         # WHOLESALE_HEADERS = ["Fecha", "Nombre", "Producto", "Cantidad", "Monto Total", "Monto Pagado", "Monto Restante", "Categoría"]
@@ -116,7 +116,7 @@ class TestModifyWholesalePayment:
         mock_ws.update_cell.assert_any_call(3, 7, 25000.0)  # remaining
         assert result["remaining_balance"] == 25000.0
 
-    @patch("services.wholesale_service.get_or_create_monthly_sheet")
+    @patch("services.wholesale_service.get_or_create_monthly_sheet", autospec=True)
     def test_full_payment_changes_to_pago(self, mock_get_sheet):
         mock_ws = MagicMock()
         mock_ws.cell.side_effect = lambda row, col: MagicMock(value={
@@ -132,7 +132,7 @@ class TestModifyWholesalePayment:
         mock_ws.update_cell.assert_any_call(3, 8, "PAGO")  # category
         assert result["remaining_balance"] == 0.0
 
-    @patch("services.wholesale_service.get_or_create_monthly_sheet")
+    @patch("services.wholesale_service.get_or_create_monthly_sheet", autospec=True)
     def test_rejects_overpayment(self, mock_get_sheet):
         mock_ws = MagicMock()
         mock_ws.cell.side_effect = lambda row, col: MagicMock(value={
@@ -147,7 +147,7 @@ class TestModifyWholesalePayment:
         assert "error" in result
         mock_ws.update_cell.assert_not_called()
 
-    @patch("services.wholesale_service.get_or_create_monthly_sheet")
+    @patch("services.wholesale_service.get_or_create_monthly_sheet", autospec=True)
     def test_returns_none_on_no_sheet(self, mock_get_sheet):
         mock_get_sheet.return_value = None
 

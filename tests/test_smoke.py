@@ -52,7 +52,9 @@ def test_imports_handlers():
         "handlers.debts", 
         "handlers.wholesale",
         "handlers.checks",
-        "handlers.balance"
+        "handlers.balance",
+        "handlers.future_payments",
+        "handlers.conversation" 
     ]
     for h in handlers:
         importlib.import_module(h)

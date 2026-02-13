@@ -3,6 +3,12 @@
 Shared pytest fixtures for the Pombot test suite.
 """
 import pytest
+import warnings
+try:
+    from telegram.warnings import PTBUserWarning
+    warnings.filterwarnings("ignore", category=PTBUserWarning)
+except ImportError:
+    pass
 
 
 @pytest.fixture
