@@ -1,29 +1,29 @@
-# Pombot Handler - Store Management Bot
+# Pombot - Finance & Store Management Bot
 
 <br>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Pombot-Handler-2c3e50?style=for-the-badge&logo=telegram&logoColor=white" alt="Pombot Logo"/>
+  <img src="pg_logo.png" alt="PG Original Logo" width="300"/>
   <br>
   <br>
-  <h2>Automated Sales, Expenses & Inventory Management System for <a href="https://pombero.com.ar/">Pombero</a>.</h2>
+  <h2>Automated Sales, Expenses & Inventory Management System for <a href="https://www.pgoriginal.com/">pgoriginal.com</a>.</h2>
 </div>
 
 
 <div align="center">
-  <a href="#">
-    <img src="https://img.shields.io/badge/Client-Pombero-000?style=for-the-badge&logo=shopify&logoColor=white" alt="Client"/>
+  <a href="https://www.pgoriginal.com/">
+    <img src="https://img.shields.io/badge/Client-PG%20Original-000?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website"/>
   </a>
-  <a href="#">
-    <img src="https://img.shields.io/badge/Platform-Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram"/>
+  <a href="https://www.instagram.com/pgoriginalind/">
+    <img src="https://img.shields.io/badge/Instagram-@pgoriginalind-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"/>
   </a>
 </div>
 
 ---
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Status-Production-success" alt="Status"/>
-  <img src="https://img.shields.io/badge/Coverage->75%25-green" alt="Coverage"/>
+  <img src="https://img.shields.io/badge/Status-Complete-success" alt="Status"/>
+  <img src="https://img.shields.io/badge/Tests-Passing-green" alt="Tests"/>
   <img src="https://img.shields.io/badge/Python-3.12-blue" alt="Python"/>
   <img src="https://img.shields.io/badge/Cloud-AWS%20Lambda-orange" alt="Cloud"/>
 </div>
@@ -70,7 +70,7 @@
 │   └── ...
 ├── services/               # 🧠 Business Logic
 │   ├── products_service.py #    - Inventory & Options
-│   ├── sheets_connection.py#    - Database (Google Sheets)
+│   ├── sheets_connectio... #    - Database
 │   └── ...
 ├── lambdas/                # ⚡ AWS Lambda Functions
 │   ├── lambda_sync.py      #    - Config & Sync Logic
@@ -126,7 +126,7 @@ scripts/run_coverage.bat
 
 ## Author
 **Milton Klun**  
-*QA Automation Engineer & Backend Developer*
+*QA Automation Engineer | Backend Developer*
 
 <div align="left">
   <a href="https://www.linkedin.com/in/milton-klun/">
