@@ -9,7 +9,6 @@ CONFIG = {}
 
 def _load_secrets():
     """Loads secrets from AWS Secrets Manager into CONFIG dict."""
-    global CONFIG
     secret_name = os.environ.get("SECRET_NAME")
     if not secret_name:
         print("ADVERTENCIA: La variable de entorno SECRET_NAME no está configurada.")
