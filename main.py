@@ -162,8 +162,35 @@ async def process_telegram_update(update_json):
 
 def lambda_handler(event, context):
     logger.info(f"Evento crudo recibido de API Gateway: {event}")
+    
+    # 1. Asegurar conexión a Google Sheets (crítico para el funcionamiento)
     try:
-        update_json = json.loads(event.get('body', '{}'))
+        if not IS_SHEET_CONNECTED:
+            logger.info("Conexión a Sheets no detectada. Intentando conectar...")
+            connect_globally_to_sheets()
+    except Exception as e:
+        logger.error(f"Error intentando conectar a Sheets en lambda_handler: {e}", exc_info=True)
+
+    # 2. Procesar el Update de Telegram
+    try:
+        # Soporte para Lambda Proxy Integration (API Gateway) vs Invocación Directa
+        if 'body' in event:
+            try:
+                if isinstance(event['body'], str):
+                    update_json = json.loads(event['body'])
+                else:
+                    update_json = event['body'] # Ya es dict/json
+            except json.JSONDecodeError:
+                logger.error("El body del evento no es un JSON válido.")
+                return {'statusCode': 400, 'body': 'Invalid JSON'}
+        else:
+            # Asumimos que el evento es el payload crudo (ej: prueba de consola o integración no-proxy)
+            update_json = event
+
+        if not update_json or 'update_id' not in update_json:
+             logger.warning("El evento recibido no parece ser un Update de Telegram válido (falta update_id).")
+             return {'statusCode': 400, 'body': 'Invalid Update Format'}
+
         asyncio.run(process_telegram_update(update_json))
         return {
             'statusCode': 200,
