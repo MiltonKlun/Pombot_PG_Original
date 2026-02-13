@@ -3,7 +3,7 @@ pytestmark = pytest.mark.unit
 
 # tests/test_handler_balance.py
 """Unit tests for handlers/balance.py — balance report generation."""
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch, AsyncMock, MagicMock, mock_open
 from constants import QUERY_BALANCE_CHOOSE_YEAR, QUERY_BALANCE_CHOOSE_MONTH
 from tests.helpers.telegram_factories import make_update, make_context
 
@@ -64,10 +64,10 @@ class TestProcessAndDisplayBalance:
 
     @pytest.mark.asyncio
     @patch("handlers.balance.display_main_menu", new_callable=AsyncMock, return_value=0)
-    @patch("builtins.open", MagicMock())
+    @patch("builtins.open", new_callable=mock_open, read_data=b"PDF")
     @patch("handlers.balance.generate_balance_pdf", return_value="/tmp/Balance_Enero_2026.pdf")
     @patch("handlers.balance.get_net_balance_for_month")
-    async def test_generates_and_sends_pdf(self, mock_balance, mock_pdf, mock_menu):
+    async def test_generates_and_sends_pdf(self, mock_balance, mock_pdf, mock_file, mock_menu):
         from handlers.balance import process_and_display_balance
         mock_balance.return_value = {"month_name": "Enero", "year": 2026, "saldo_neto": 50000.0}
         update = make_update(callback_data="balance_month_2026_1")
