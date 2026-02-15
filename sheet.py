@@ -19,6 +19,7 @@ All business logic now lives in the services/ submodules:
 from services.sheets_connection import (
     connect_globally_to_sheets,
     IS_SHEET_CONNECTED,
+    is_connected,
     get_value_from_dict_insensitive,
     apply_table_formatting,
     _get_or_create_worksheet,

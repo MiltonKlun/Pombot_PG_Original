@@ -30,8 +30,8 @@ class PDFReport(FPDF):
 
         try:
             self.image(os.path.join(_ASSETS_DIR, 'logo.png'), x=logo_x_position, y=8, w=logo_width)
-        except (FileNotFoundError, EnvironmentError):
-            logger.warning("No se encontró 'logo.png' o Pillow no disponible. El reporte se generará sin logo.")
+        except (FileNotFoundError, EnvironmentError, Exception) as e:
+            logger.error(f"FALLO LOGO: No se cargó el logo. Path buscado: {os.path.join(_ASSETS_DIR, 'logo.png')}. Error: {e}", exc_info=True)
 
         self.ln(5)
 
@@ -135,18 +135,22 @@ def generate_balance_pdf(balance_data: dict) -> str:
         pdf.ln(10)
 
         # --- Gráfico de Gastos ---
-        expenses_data = {k: v for k, v in balance_data.get("gastos_pg_summary", {}).get("by_category", {}).items() if v > 0}
-        if expenses_data:
-            expense_buffer = io.BytesIO()
-            expense_chart_height = 120 + (len(expenses_data) * 40)
-            _create_bar_chart(
-                data=expenses_data, title="Distribución de Gastos (PG)", buffer=expense_buffer,
-                width=800, height=expense_chart_height, color_hex=BRAND_COLORS['expense']
-            )
-            if expense_buffer.getbuffer().nbytes > 0:
-                if pdf.get_y() + (expense_chart_height / 4) > pdf.page_break_trigger:
-                     pdf.add_page()
-                pdf.image(expense_buffer, x=10, w=pdf.w - 20)
+        try:
+            expenses_data = {k: v for k, v in balance_data.get("gastos_pg_summary", {}).get("by_category", {}).items() if v > 0}
+            if expenses_data:
+                expense_buffer = io.BytesIO()
+                expense_chart_height = 120 + (len(expenses_data) * 40)
+                _create_bar_chart(
+                    data=expenses_data, title="Distribución de Gastos (PG)", buffer=expense_buffer,
+                    width=800, height=expense_chart_height, color_hex=BRAND_COLORS['expense']
+                )
+                if expense_buffer.getbuffer().nbytes > 0:
+                    if pdf.get_y() + (expense_chart_height / 4) > pdf.page_break_trigger:
+                        pdf.add_page()
+                    pdf.image(expense_buffer, x=10, w=pdf.w - 20)
+        except Exception as e:
+            logger.error(f"FALLO GRAFICO: No se pudo generar el gráfico. Error: {e}", exc_info=True)
+            # No re-raise, allow PDF to generate without chart
 
         # --- Tablas de Detalle ---
         def create_detail_table(title, data):

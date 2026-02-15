@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # --- Menú Principal de Mayoristas ---
 async def start_add_wholesale(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    await query.answer()
+    if query: await query.answer()
 
     buttons = [
         ("📝 Registrar Seña", "wholesale_seña"),
@@ -30,7 +30,12 @@ async def start_add_wholesale(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(build_button_rows(1, buttons))
     
-    await query.edit_message_text("📦 Ventas Mayoristas\n\nElige el tipo de registro:", reply_markup=reply_markup)
+    text = "📦 Ventas Mayoristas\n\nElige el tipo de registro:"
+    if query:
+        await query.edit_message_text(text, reply_markup=reply_markup)
+    elif update.message:
+        await update.message.reply_text(text, reply_markup=reply_markup)
+
     return ADD_WHOLESALE_MENU
 
 async def wholesale_menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

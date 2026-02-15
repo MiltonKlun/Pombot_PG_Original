@@ -209,10 +209,10 @@ class TestUpdateProductsFromTiendanube:
     """Tests for full sheet replacement from TiendaNube data (Sync)."""
 
     @patch("services.products_service.get_product_sheet")
-    @patch("services.products_service.IS_SHEET_CONNECTED", True)
+    @patch("services.products_service.is_connected", return_value=True)
     @patch("services.products_service.apply_table_formatting")
     @patch("services.products_service.invalidate_products_cache")
-    def test_successful_update(self, mock_invalidate, mock_format, mock_get_sheet):
+    def test_successful_update(self, mock_invalidate, mock_format, mock_is_connected, mock_get_sheet):
         from services.products_service import update_products_from_tiendanube
         
         mock_ws = MagicMock()
@@ -229,8 +229,8 @@ class TestUpdateProductsFromTiendanube:
         mock_invalidate.assert_called_once()
 
     @patch("services.products_service.get_product_sheet")
-    @patch("services.products_service.IS_SHEET_CONNECTED", True)
-    def test_handles_sheet_error(self, mock_get_sheet):
+    @patch("services.products_service.is_connected", return_value=True)
+    def test_handles_sheet_error(self, mock_is_connected, mock_get_sheet):
         from services.products_service import update_products_from_tiendanube
         
         mock_ws = MagicMock()

@@ -34,7 +34,7 @@ from handlers.wholesale import (
     ask_for_modification_amount, apply_modification_payment
 )
 from handlers.balance import (
-    query_balance_year_handler, query_balance_month_handler
+    query_balance_year_handler, query_balance_month_handler, query_balance_start_handler
 )
 from handlers.checks import (
     checks_menu_handler, checks_get_entity, 
@@ -46,7 +46,14 @@ from handlers.future_payments import (
 )
 
 conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("start", start_command)],
+    entry_points=[
+        CommandHandler("start", start_command),
+        MessageHandler(filters.Regex(f"^{BTN_NEW_SALE}$"), start_add_sale),
+        MessageHandler(filters.Regex(f"^{BTN_NEW_WHOLESALE}$"), start_add_wholesale),
+        MessageHandler(filters.Regex(f"^{BTN_NEW_EXPENSE}$"), start_add_expense),
+        MessageHandler(filters.Regex(f"^{BTN_DEBTS}$"), start_debt_menu),
+        MessageHandler(filters.Regex(f"^{BTN_BALANCE}$"), query_balance_start_handler),
+    ],
     states={
         MAIN_MENU: [CallbackQueryHandler(handle_main_menu_choice, pattern='^main_')],
         

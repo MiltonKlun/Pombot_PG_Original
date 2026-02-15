@@ -11,7 +11,7 @@ from config import PRODUCTOS_SHEET_NAME, PRODUCTOS_HEADERS
 from common.utils import normalize_text, parse_float
 from services.tiendanube_service import update_tiendanube_stock
 from services.sheets_connection import (
-    IS_SHEET_CONNECTED,
+    is_connected,
     _get_or_create_worksheet, apply_table_formatting,
     get_value_from_dict_insensitive
 )
@@ -176,7 +176,7 @@ def update_product_stock(row_number: int, new_stock: int) -> bool:
 
 def update_products_from_tiendanube(products_data: list) -> tuple[bool, str]:
     """Replaces all product data in the sheet with fresh data from TiendaNube."""
-    if not IS_SHEET_CONNECTED:
+    if not is_connected():
         msg = "No hay conexión a Google Sheets para actualizar productos."
         return False, msg
     product_sheet = get_product_sheet()

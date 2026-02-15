@@ -68,8 +68,10 @@ class TestAddWholesaleRecord:
 class TestGetPendingWholesalePayments:
     """Tests for get_pending_wholesale_payments — filters 'Seña' records."""
 
-    @patch("services.wholesale_service.spreadsheet")
-    def test_filters_only_sena_records(self, mock_spreadsheet):
+    @patch("services.wholesale_service.get_spreadsheet")
+    def test_filters_only_sena_records(self, mock_get_spreadsheet):
+        mock_spreadsheet = MagicMock()
+        mock_get_spreadsheet.return_value = mock_spreadsheet
         mock_ws = MagicMock()
         mock_ws.get_all_records.return_value = [
             {"Nombre": "A", "Categoría": "Seña", "Monto Restante": 5000},
@@ -87,8 +89,10 @@ class TestGetPendingWholesalePayments:
         assert result[1]["Nombre"] == "C"
         assert result[1]["row_number"] == 4
 
-    @patch("services.wholesale_service.spreadsheet")
-    def test_returns_empty_on_missing_sheet(self, mock_spreadsheet):
+    @patch("services.wholesale_service.get_spreadsheet")
+    def test_returns_empty_on_missing_sheet(self, mock_get_spreadsheet):
+        mock_spreadsheet = MagicMock()
+        mock_get_spreadsheet.return_value = mock_spreadsheet
         mock_spreadsheet.worksheet.side_effect = Exception("NotFound")
 
         from services.wholesale_service import get_pending_wholesale_payments
@@ -158,9 +162,11 @@ class TestModifyWholesalePayment:
 class TestGetWholesaleSummary:
     """Tests for get_wholesale_summary — aggregates by client with details."""
 
-    @patch("services.wholesale_service.IS_SHEET_CONNECTED", True)
-    @patch("services.wholesale_service.spreadsheet")
-    def test_aggregates_by_client(self, mock_spreadsheet):
+    @patch("services.wholesale_service.is_connected", return_value=True)
+    @patch("services.wholesale_service.get_spreadsheet")
+    def test_aggregates_by_client(self, mock_get_spreadsheet, mock_is_connected):
+        mock_spreadsheet = MagicMock()
+        mock_get_spreadsheet.return_value = mock_spreadsheet
         mock_ws = MagicMock()
         mock_ws.get_all_records.return_value = [
             {"Nombre": "ClienteA", "Producto": "Remeras", "Cantidad": 10, "Monto Pagado": 50000, "Categoría": "PAGO"},
@@ -179,9 +185,11 @@ class TestGetWholesaleSummary:
         assert result["by_client"]["ClienteB"]["amount"] == 20000.0
         assert len(result["details"]) == 3
 
-    @patch("services.wholesale_service.IS_SHEET_CONNECTED", True)
-    @patch("services.wholesale_service.spreadsheet")
-    def test_returns_zeros_on_missing_sheet(self, mock_spreadsheet):
+    @patch("services.wholesale_service.is_connected", return_value=True)
+    @patch("services.wholesale_service.get_spreadsheet")
+    def test_returns_zeros_on_missing_sheet(self, mock_get_spreadsheet, mock_is_connected):
+        mock_spreadsheet = MagicMock()
+        mock_get_spreadsheet.return_value = mock_spreadsheet
         mock_spreadsheet.worksheet.side_effect = Exception("NotFound")
 
         from services.wholesale_service import get_wholesale_summary
@@ -192,8 +200,8 @@ class TestGetWholesaleSummary:
         assert result["by_client"] == {}
         assert result["details"] == []
 
-    @patch("services.wholesale_service.IS_SHEET_CONNECTED", False)
-    def test_raises_on_no_connection(self):
+    @patch("services.wholesale_service.is_connected", return_value=False)
+    def test_raises_on_no_connection(self, mock_is_connected):
         from services.wholesale_service import get_wholesale_summary
         with pytest.raises(ConnectionError):
             get_wholesale_summary(2026, 1)

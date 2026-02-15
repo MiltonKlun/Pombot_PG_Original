@@ -11,7 +11,7 @@ from collections import defaultdict
 from config import WHOLESALE_SHEET_BASE_NAME, WHOLESALE_HEADERS, get_sheet_name_for_month
 from common.utils import parse_float
 from services.sheets_connection import (
-    IS_SHEET_CONNECTED, spreadsheet,
+    is_connected, get_spreadsheet,
     get_or_create_monthly_sheet, get_value_from_dict_insensitive
 )
 
@@ -42,6 +42,10 @@ def add_wholesale_record(name: str, product: str, quantity: int, paid_amount: fl
 
 def get_pending_wholesale_payments(year: int, month: int) -> List[Dict[str, Any]]:
     """Obtiene todos los registros mayoristas marcados como 'Seña'."""
+    spreadsheet = get_spreadsheet()
+    if not spreadsheet:
+        return []
+
     target_sheet_name = get_sheet_name_for_month(WHOLESALE_SHEET_BASE_NAME, year, month)
     try:
         worksheet = spreadsheet.worksheet(target_sheet_name)
@@ -87,8 +91,13 @@ def modify_wholesale_payment(row_number: int, payment_amount: float) -> Optional
 
 def get_wholesale_summary(year: int, month: int) -> dict:
     """Obtiene el resumen de ventas mayoristas para un mes especifico, incluyendo detalles por operación."""
-    if not IS_SHEET_CONNECTED:
+    if not is_connected():
         raise ConnectionError("No hay conexion a Google Sheets.")
+    
+    spreadsheet = get_spreadsheet()
+    if not spreadsheet:
+        return {"total": 0.0, "count": 0, "by_client": {}, "details": []}
+
     target_sheet_name = get_sheet_name_for_month(WHOLESALE_SHEET_BASE_NAME, year, month)
     try:
         worksheet = spreadsheet.worksheet(target_sheet_name)

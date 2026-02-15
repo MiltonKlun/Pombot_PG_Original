@@ -50,6 +50,15 @@ def connect_globally_to_sheets() -> bool:
 
 IS_SHEET_CONNECTED = False
 
+def is_connected() -> bool:
+    """Returns the current connection status."""
+    return IS_SHEET_CONNECTED
+
+
+def get_spreadsheet() -> Optional[gspread.Spreadsheet]:
+    """Returns the active spreadsheet object."""
+    return spreadsheet
+
 
 def get_value_from_dict_insensitive(data: dict, target_key: str) -> Any:
     """

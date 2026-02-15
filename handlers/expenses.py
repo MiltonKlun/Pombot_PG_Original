@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 async def start_add_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    await query.answer()
+    if query: await query.answer()
 
     buttons = [(cat, f"exp_cat_{cat}") for cat in EXPENSE_CATEGORIES]
     buttons.append(("🧾 Cheques", "exp_cat_CHEQUES")) # Botón para el nuevo módulo
@@ -20,7 +20,13 @@ async def start_add_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     button_rows = build_button_rows(2, buttons)
     button_rows.append([InlineKeyboardButton("🔙 Volver al Menú", callback_data="cancel_to_main")])
     reply_markup = InlineKeyboardMarkup(button_rows)
-    await query.edit_message_text("💸 Registrar Gasto\n\nSelecciona una categoría:", reply_markup=reply_markup)
+    
+    text = "💸 Registrar Gasto\n\nSelecciona una categoría:"
+    if query:
+        await query.edit_message_text(text, reply_markup=reply_markup)
+    elif update.message:
+        await update.message.reply_text(text, reply_markup=reply_markup)
+    
     context.user_data['expense_flow'] = {}
     return ADD_EXPENSE_CHOOSE_CATEGORY
 

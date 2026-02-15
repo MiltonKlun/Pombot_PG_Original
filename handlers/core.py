@@ -1,10 +1,10 @@
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler
 from config import ALLOWED_USER_IDS
-from sheet import IS_SHEET_CONNECTED, update_products_from_tiendanube
+from sheet import IS_SHEET_CONNECTED, is_connected, update_products_from_tiendanube
 from services.tiendanube_service import get_tiendanube_products
-from constants import MAIN_MENU
+from constants import MAIN_MENU, BTN_NEW_SALE, BTN_NEW_WHOLESALE, BTN_NEW_EXPENSE, BTN_DEBTS, BTN_BALANCE
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +47,22 @@ async def display_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not await is_allowed_user(update): return ConversationHandler.END
-    if not IS_SHEET_CONNECTED:
+    if not is_connected():
         if update.message: await update.message.reply_text("⚠️ Error Crítico: No se pudo conectar a Google Sheets.")
         return ConversationHandler.END
     if update.effective_chat:
         context.chat_data['chat_id'] = update.effective_chat.id
+    
+    # Enviar menú persistente
+    persistent_menu = [
+        [BTN_NEW_SALE, BTN_NEW_WHOLESALE],
+        [BTN_NEW_EXPENSE, BTN_DEBTS],
+        [BTN_BALANCE]
+    ]
+    reply_markup = ReplyKeyboardMarkup(persistent_menu, resize_keyboard=True, one_time_keyboard=False)
+    if update.message:
+        await update.message.reply_text("✅ Menú principal activado.", reply_markup=reply_markup)
+
     return await display_main_menu(update, context)
 
 async def back_to_main_menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

@@ -10,14 +10,14 @@ from telegram.ext import (
     PicklePersistence
 )
 from config import BOT_TOKEN
-from sheet import IS_SHEET_CONNECTED, connect_globally_to_sheets
+from sheet import IS_SHEET_CONNECTED, is_connected, connect_globally_to_sheets
 from handlers.core import unknown_command, sync_products_command
 from handlers.conversation import conv_handler
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-if not IS_SHEET_CONNECTED:
+if not is_connected():
     connect_globally_to_sheets()
 
 persistence = PicklePersistence(filepath="/tmp/pombot_persistence")
@@ -34,10 +34,11 @@ async def process_telegram_update(update_json):
         await application.process_update(update)
         await application.shutdown()
 
+
 def lambda_handler(event, context):
     logger.info(f"Evento crudo recibido de API Gateway: {event}")
     try:
-        if not IS_SHEET_CONNECTED:
+        if not is_connected():
             logger.info("Conexión a Sheets no detectada. Intentando conectar...")
             if not connect_globally_to_sheets():
                  return {

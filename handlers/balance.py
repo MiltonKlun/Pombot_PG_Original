@@ -19,7 +19,11 @@ async def query_balance_start_handler(update: Update, context: ContextTypes.DEFA
 
     available_months_years = get_available_sheet_months_years()
     if not available_months_years:
-        await query.edit_message_text("No hay datos de meses anteriores para consultar.")
+        msg = "No hay datos de meses anteriores para consultar."
+        if query:
+            await query.edit_message_text(msg)
+        elif update.message:
+            await update.message.reply_text(msg)
         return await display_main_menu(update, context, send_as_new=True)
         
     unique_years = sorted(list(set(ym[0] for ym in available_months_years)), reverse=True)
@@ -28,7 +32,13 @@ async def query_balance_start_handler(update: Update, context: ContextTypes.DEFA
     button_rows.append([InlineKeyboardButton("🗓️ Balance Mes Actual", callback_data="balance_current_month")])
     button_rows.append([InlineKeyboardButton("🔙 Volver al Menú", callback_data="cancel_to_main")])
     reply_markup = InlineKeyboardMarkup(button_rows)
-    await query.edit_message_text("📈 Consultar Balance\nSelecciona el año:", reply_markup=reply_markup)
+    
+    text = "📈 Consultar Balance\nSelecciona el año:"
+    if query:
+        await query.edit_message_text(text, reply_markup=reply_markup)
+    elif update.message:
+        await update.message.reply_text(text, reply_markup=reply_markup)
+        
     return QUERY_BALANCE_CHOOSE_YEAR
 
 async def query_balance_year_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

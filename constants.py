@@ -43,3 +43,10 @@
 
 # Nuevos estados añadidos al flujo de Pagos Futuros (se agregan al final para no alterar los anteriores)
 FUTURE_PAYMENTS_GET_PRODUCT, FUTURE_PAYMENTS_GET_QUANTITY = range(44, 46)
+
+# Persistent Menu Buttons
+BTN_NEW_SALE = "💰 Registrar Venta"
+BTN_NEW_WHOLESALE = "📦 Registrar Mayorista"
+BTN_NEW_EXPENSE = "💸 Registrar Gasto"
+BTN_DEBTS = "💳 Deudas"
+BTN_BALANCE = "📈 Consultar Balance"

@@ -43,13 +43,17 @@ def create_paginated_keyboard(product_list: list, page: int = 0, items_per_page:
 
 async def start_add_sale(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
+    if query: await query.answer()
     logger.info("Iniciando flujo 'Registrar Venta'.")
     
     logger.info("Verificando/Creando hoja de ventas mensual...")
     sales_sheet = get_or_create_monthly_sheet(SALES_SHEET_BASE_NAME, SALES_HEADERS)
     if not sales_sheet:
         error_message = "⚠️ Error crítico: No se pudo crear o acceder a la hoja de Ventas. Por favor, contacta al administrador."
-        await query.edit_message_text(error_message)
+        if query:
+            await query.edit_message_text(error_message)
+        elif update.message:
+            await update.message.reply_text(error_message)
         return await display_main_menu(update, context, "Operación cancelada.", send_as_new=True)
 
     logger.info("Obteniendo categorías de productos...")
@@ -64,7 +68,13 @@ async def start_add_sale(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     button_rows = build_button_rows(2, buttons)
     button_rows.append([InlineKeyboardButton("🔙 Volver al Menú", callback_data="cancel_to_main")])
     reply_markup = InlineKeyboardMarkup(button_rows)
-    await query.edit_message_text("🛒 Registrar Venta\nSelecciona la categoría:", reply_markup=reply_markup)
+    
+    text = "🛒 Registrar Venta\nSelecciona la categoría:"
+    if query:
+        await query.edit_message_text(text, reply_markup=reply_markup)
+    elif update.message:
+        await update.message.reply_text(text, reply_markup=reply_markup)
+        
     return ADD_SALE_CHOOSE_CATEGORY
 
 async def sale_choose_category_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

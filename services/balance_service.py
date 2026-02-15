@@ -14,7 +14,7 @@ from config import (
 )
 from common.utils import parse_float
 from services.sheets_connection import (
-    IS_SHEET_CONNECTED, spreadsheet,
+    is_connected, get_spreadsheet,
     get_value_from_dict_insensitive
 )
 from services.wholesale_service import get_wholesale_summary
@@ -24,8 +24,13 @@ logger = logging.getLogger(__name__)
 
 def get_monthly_summary(sheet_base_name: str, year: int, month: int) -> dict:
     """Calculates totals and category breakdown for a given monthly sheet."""
-    if not IS_SHEET_CONNECTED:
+    if not is_connected():
         raise ConnectionError("No hay conexion a Google Sheets.")
+    
+    spreadsheet = get_spreadsheet()
+    if not spreadsheet:
+        raise ConnectionError("Objeto Spreadsheet no inicializado.")
+
     target_sheet_name = get_sheet_name_for_month(sheet_base_name, year, month)
     try:
         worksheet = spreadsheet.worksheet(target_sheet_name)
@@ -62,6 +67,9 @@ def get_net_balance_for_month(year: int, month: int) -> dict:
     sales_summary = get_monthly_summary(SALES_SHEET_BASE_NAME, year, month)
     wholesale_summary = get_wholesale_summary(year, month)
     all_expenses_summary = get_monthly_summary(EXPENSES_SHEET_BASE_NAME, year, month)
+    
+    spreadsheet = get_spreadsheet() # Need spreadsheet access for detailed expense breakdown
+    
     gastos_pg_total = 0
     gastos_personales_by_cat = {}
     gastos_pg_by_cat = {}
@@ -69,30 +77,32 @@ def get_net_balance_for_month(year: int, month: int) -> dict:
     if all_expenses_summary.get("by_category"):
         for category, total in all_expenses_summary["by_category"].items():
             if category == "PERSONALES":
-                target_sheet_name = get_sheet_name_for_month(EXPENSES_SHEET_BASE_NAME, year, month)
-                try:
-                    worksheet = spreadsheet.worksheet(target_sheet_name)
-                    all_expense_records = worksheet.get_all_records()
-                    for record in all_expense_records:
-                        if get_value_from_dict_insensitive(record, "Categoría") == "PERSONALES":
-                            subcategory = get_value_from_dict_insensitive(record, "Subcategoría") or "General"
-                            amount = parse_float(str(get_value_from_dict_insensitive(record, "Monto") or '0')) or 0.0
-                            gastos_personales_by_cat[subcategory] = gastos_personales_by_cat.get(subcategory, 0.0) + amount
-                except gspread.exceptions.WorksheetNotFound:
-                    pass
+                if spreadsheet:
+                    target_sheet_name = get_sheet_name_for_month(EXPENSES_SHEET_BASE_NAME, year, month)
+                    try:
+                        worksheet = spreadsheet.worksheet(target_sheet_name)
+                        all_expense_records = worksheet.get_all_records()
+                        for record in all_expense_records:
+                            if get_value_from_dict_insensitive(record, "Categoría") == "PERSONALES":
+                                subcategory = get_value_from_dict_insensitive(record, "Subcategoría") or "General"
+                                amount = parse_float(str(get_value_from_dict_insensitive(record, "Monto") or '0')) or 0.0
+                                gastos_personales_by_cat[subcategory] = gastos_personales_by_cat.get(subcategory, 0.0) + amount
+                    except gspread.exceptions.WorksheetNotFound:
+                        pass
             elif category == "CANJES":
                 canjes_summary["total"] += total
-                target_sheet_name = get_sheet_name_for_month(EXPENSES_SHEET_BASE_NAME, year, month)
-                try:
-                    worksheet = spreadsheet.worksheet(target_sheet_name)
-                    all_expense_records = worksheet.get_all_records()
-                    for record in all_expense_records:
-                        if get_value_from_dict_insensitive(record, "Categoría") == "CANJES":
-                            subcategory = get_value_from_dict_insensitive(record, "Subcategoría") or "N/A"
-                            amount = parse_float(str(get_value_from_dict_insensitive(record, "Monto") or '0')) or 0.0
-                            canjes_summary["by_category"][subcategory] = canjes_summary["by_category"].get(subcategory, 0.0) + amount
-                except gspread.exceptions.WorksheetNotFound:
-                    pass
+                if spreadsheet:
+                    target_sheet_name = get_sheet_name_for_month(EXPENSES_SHEET_BASE_NAME, year, month)
+                    try:
+                        worksheet = spreadsheet.worksheet(target_sheet_name)
+                        all_expense_records = worksheet.get_all_records()
+                        for record in all_expense_records:
+                            if get_value_from_dict_insensitive(record, "Categoría") == "CANJES":
+                                subcategory = get_value_from_dict_insensitive(record, "Subcategoría") or "N/A"
+                                amount = parse_float(str(get_value_from_dict_insensitive(record, "Monto") or '0')) or 0.0
+                                canjes_summary["by_category"][subcategory] = canjes_summary["by_category"].get(subcategory, 0.0) + amount
+                    except gspread.exceptions.WorksheetNotFound:
+                        pass
             else:
                 gastos_pg_total += total
                 gastos_pg_by_cat[category] = total
@@ -114,8 +124,13 @@ def get_net_balance_for_month(year: int, month: int) -> dict:
 
 def get_available_sheet_months_years() -> list[tuple[int, int]]:
     """Discovers which (year, month) combinations have data in the spreadsheet."""
-    if not IS_SHEET_CONNECTED:
+    if not is_connected():
         return []
+    
+    spreadsheet = get_spreadsheet()
+    if not spreadsheet:
+        return []
+
     sheet_titles = [sh.title for sh in spreadsheet.worksheets()]
     logger.info(f"Hojas encontradas: {sheet_titles}")
     available = set()

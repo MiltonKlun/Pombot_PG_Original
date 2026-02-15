@@ -9,9 +9,11 @@ from unittest.mock import patch, MagicMock
 class TestGetMonthlySummary:
     """Tests for get_monthly_summary — aggregates data from a sheet tab."""
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", True)
-    @patch("services.balance_service.spreadsheet")
-    def test_calculates_totals(self, mock_spreadsheet, sample_sales_records):
+    @patch("services.balance_service.is_connected", return_value=True)
+    @patch("services.balance_service.get_spreadsheet")
+    def test_calculates_totals(self, mock_get_spreadsheet, mock_is_connected, sample_sales_records):
+        mock_spreadsheet = MagicMock()
+        mock_get_spreadsheet.return_value = mock_spreadsheet
         mock_worksheet = MagicMock()
         mock_worksheet.get_all_records.return_value = sample_sales_records
         mock_spreadsheet.worksheet.return_value = mock_worksheet
@@ -24,10 +26,12 @@ class TestGetMonthlySummary:
         assert "REMERAS" in result["by_category"]
         assert "PANTALONES" in result["by_category"]
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", True)
-    @patch("services.balance_service.spreadsheet")
-    def test_empty_sheet(self, mock_spreadsheet):
+    @patch("services.balance_service.is_connected", return_value=True)
+    @patch("services.balance_service.get_spreadsheet")
+    def test_empty_sheet(self, mock_get_spreadsheet, mock_is_connected):
         import gspread
+        mock_spreadsheet = MagicMock()
+        mock_get_spreadsheet.return_value = mock_spreadsheet
         mock_spreadsheet.worksheet.side_effect = gspread.exceptions.WorksheetNotFound
 
         from services.balance_service import get_monthly_summary
@@ -36,8 +40,8 @@ class TestGetMonthlySummary:
         assert result["total"] == 0.0
         assert result["count"] == 0
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", False)
-    def test_not_connected_raises(self):
+    @patch("services.balance_service.is_connected", return_value=False)
+    def test_not_connected_raises(self, mock_is_connected):
         from services.balance_service import get_monthly_summary
         with pytest.raises(ConnectionError):
             get_monthly_summary("Ventas", 2026, 1)
@@ -82,7 +86,9 @@ class TestGetNetBalanceForMonth:
         from services.balance_service import get_net_balance_for_month
 
         # Need to also mock the spreadsheet for the PERSONALES subcategory lookup
-        with patch("services.balance_service.spreadsheet") as mock_ss:
+        with patch("services.balance_service.get_spreadsheet") as mock_get_ss:
+            mock_ss = MagicMock()
+            mock_get_ss.return_value = mock_ss
             mock_ws = MagicMock()
             mock_ws.get_all_records.return_value = [
                 {"Categoría": "PERSONALES", "Subcategoría": "ALQUILER", "Monto": 15000},
