@@ -16,8 +16,8 @@ from config import SALES_SHEET_BASE_NAME, EXPENSES_SHEET_BASE_NAME
 class TestGetMonthlySummary:
     """get_monthly_summary — totals and category breakdown from a sheet."""
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", True)
-    @patch("services.balance_service.spreadsheet")
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", True)
+    @patch("services.sheets_connection.spreadsheet")
     def test_sales_summary_totals(self, mock_ss):
         """Sales summary calculates total from Precio Total column."""
         mock_ws = MagicMock()
@@ -36,8 +36,8 @@ class TestGetMonthlySummary:
         assert result["by_category"]["REMERAS"] == 15000.0
         assert result["by_category"]["PANTALONES"] == 7200.0
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", True)
-    @patch("services.balance_service.spreadsheet")
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", True)
+    @patch("services.sheets_connection.spreadsheet")
     def test_expenses_summary_uses_monto_column(self, mock_ss):
         """Expense summary reads from Monto column."""
         mock_ws = MagicMock()
@@ -55,8 +55,8 @@ class TestGetMonthlySummary:
         assert result["by_category"]["PERSONALES"] == 80000.0
         assert result["by_category"]["CANJES"] == 3000.0
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", True)
-    @patch("services.balance_service.spreadsheet")
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", True)
+    @patch("services.sheets_connection.spreadsheet")
     def test_missing_sheet_returns_zero_totals(self, mock_ss):
         """Non-existent sheet returns zero totals."""
         mock_ss.worksheet.side_effect = gspread.exceptions.WorksheetNotFound("test")
@@ -67,7 +67,7 @@ class TestGetMonthlySummary:
         assert result["total"] == 0.0
         assert result["count"] == 0
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", False)
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", False)
     def test_raises_on_no_connection(self):
         from services.balance_service import get_monthly_summary
         with pytest.raises(ConnectionError):
@@ -80,8 +80,8 @@ class TestGetNetBalanceForMonth:
     saldo_neto = saldo_pg - gastos_personales
     """
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", True)
-    @patch("services.balance_service.spreadsheet")
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", True)
+    @patch("services.sheets_connection.spreadsheet")
     @patch("services.balance_service.get_wholesale_summary")
     def test_balance_formula(self, mock_wholesale, mock_ss, ):
         """Verify the net balance calculation with known data."""
@@ -131,8 +131,8 @@ class TestGetNetBalanceForMonth:
         assert result["month_name"] == "Enero"
         assert result["year"] == 2026
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", True)
-    @patch("services.balance_service.spreadsheet")
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", True)
+    @patch("services.sheets_connection.spreadsheet")
     @patch("services.balance_service.get_wholesale_summary")
     def test_balance_with_no_sales(self, mock_wholesale, mock_ss):
         """Zero sales → negative balance if expenses exist."""
@@ -161,8 +161,8 @@ class TestGetNetBalanceForMonth:
 class TestGetAvailableSheetMonthsYears:
     """get_available_sheet_months_years — discovers data months from sheet titles."""
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", True)
-    @patch("services.balance_service.spreadsheet")
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", True)
+    @patch("services.sheets_connection.spreadsheet")
     def test_discovers_months_from_sheet_titles(self, mock_ss):
         mock_ss.worksheets.return_value = [
             MagicMock(title="Ventas Enero 2026"),
@@ -180,7 +180,7 @@ class TestGetAvailableSheetMonthsYears:
         # Sorted descending
         assert result[0] == (2026, 2)
 
-    @patch("services.balance_service.IS_SHEET_CONNECTED", False)
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", False)
     def test_returns_empty_when_not_connected(self):
         from services.balance_service import get_available_sheet_months_years
         assert get_available_sheet_months_years() == []

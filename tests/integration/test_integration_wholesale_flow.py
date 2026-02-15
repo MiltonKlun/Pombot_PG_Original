@@ -105,7 +105,7 @@ class TestWholesaleRecordAndModify:
 class TestWholesalePendingPayments:
     """get_pending_wholesale_payments filters by Seña category."""
 
-    @patch("services.wholesale_service.spreadsheet")
+    @patch("services.sheets_connection.spreadsheet")
     def test_returns_only_seña_records(self, mock_spreadsheet):
         mock_ws = MagicMock()
         mock_ws.get_all_records.return_value = [
@@ -127,8 +127,8 @@ class TestWholesalePendingPayments:
 class TestWholesaleSummary:
     """get_wholesale_summary aggregates totals by client."""
 
-    @patch("services.wholesale_service.IS_SHEET_CONNECTED", True)
-    @patch("services.wholesale_service.spreadsheet")
+    @patch("services.sheets_connection.IS_SHEET_CONNECTED", True)
+    @patch("services.sheets_connection.spreadsheet")
     def test_summary_aggregates_by_client(self, mock_spreadsheet):
         mock_ws = MagicMock()
         mock_ws.get_all_records.return_value = [

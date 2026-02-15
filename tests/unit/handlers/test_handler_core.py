@@ -41,7 +41,7 @@ class TestStartCommand:
     """Tests for start_command — entry point."""
 
     @pytest.mark.asyncio
-    @patch("handlers.core.IS_SHEET_CONNECTED", True)
+    @patch("handlers.core.is_connected", return_value=True)
     @patch("handlers.core.ALLOWED_USER_IDS", [12345])
     @patch("handlers.core.display_main_menu", new_callable=AsyncMock, return_value=MAIN_MENU)
     async def test_allowed_and_connected_returns_main_menu(self, mock_menu):
@@ -52,7 +52,7 @@ class TestStartCommand:
         assert result == MAIN_MENU
 
     @pytest.mark.asyncio
-    @patch("handlers.core.IS_SHEET_CONNECTED", False)
+    @patch("handlers.core.is_connected", return_value=False)
     @patch("handlers.core.ALLOWED_USER_IDS", [12345])
     async def test_not_connected_returns_end(self):
         from handlers.core import start_command
