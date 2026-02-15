@@ -44,7 +44,7 @@ class TestStartCommand:
     @patch("handlers.core.is_connected", return_value=True)
     @patch("handlers.core.ALLOWED_USER_IDS", [12345])
     @patch("handlers.core.display_main_menu", new_callable=AsyncMock, return_value=MAIN_MENU)
-    async def test_allowed_and_connected_returns_main_menu(self, mock_menu):
+    async def test_allowed_and_connected_returns_main_menu(self, mock_menu, mock_is_connected):
         from handlers.core import start_command
         update = make_update(text="/start")
         context = make_context()
@@ -54,7 +54,7 @@ class TestStartCommand:
     @pytest.mark.asyncio
     @patch("handlers.core.is_connected", return_value=False)
     @patch("handlers.core.ALLOWED_USER_IDS", [12345])
-    async def test_not_connected_returns_end(self):
+    async def test_not_connected_returns_end(self, mock_is_connected):
         from handlers.core import start_command
         update = make_update(text="/start")
         context = make_context()
